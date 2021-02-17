@@ -8,6 +8,7 @@ export default class Character {
     this.defence = 0;
     this.health = 100;
     this.type = type;
+    this.extend = 'Character';
   }
 }
 
