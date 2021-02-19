@@ -126,14 +126,17 @@ export default class GameController {
             this.teams[team].forEach((elem, i) => { // Перебор комманды
               if (selectedPID === elem.position) { // Если выделенный персонаж, то
                 teamObj[team][i] = new PositionedCharacter(elem.character, index);
+                this.gamePlay.cells[elem.position].removeAttribute('title'); // Удаление title со старой клетки
+                this.gamePlay.showCellTooltip(`🎖${elem.character.level} ⚔${elem.character.attack} 🛡${elem.character.defence} ❤${elem.character.health}`, index); // Создание title у новой клетки
               } else {
                 teamObj[team][i] = elem; // запись персонажей в массив
               }
             });
           }
         }
-        this.gamePlay.cells.forEach((item, i) => this.gamePlay.deselectCell(i)); // Снять все выделения с персонажей
-        // console.log(teamObj.computerTeam.concat(teamObj.playerTeam));
+        this.gamePlay.cells.forEach((item, i) => { // Снять все выделения с персонажей
+          this.gamePlay.deselectCell(i);
+        });
         this.gamePlay.redrawPositions(teamObj.computerTeam.concat(teamObj.playerTeam)); // Отрисовка перемещения
       } else { // клетка с персонажем
         if (selectedPID === index) { // Если нажатие по выбранному персонажу, то
@@ -173,7 +176,11 @@ export default class GameController {
       }
     }
 
-
+    this.gamePlay.cells.forEach((cell) => { // Перебор игрового поля
+      if (cell.childElementCount ===0 && cell.getAttributeNames().includes('title')) { // Если клетка пуста и у неё есть title
+        cell.removeAttribute('title'); // То удалить его
+      }
+    });
     // let access = true, currentPersonageActive = false, currentPersonageId;
     // this.teams.playerTeam.forEach((item) => { // перебор команды игрока
     //   if (this.gamePlay.cells[item.position].classList.contains('selected')) { // Если выбран какой-нибудь игрок, то переключить логику
