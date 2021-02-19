@@ -14,10 +14,10 @@ export function calcTileType(index, boardSize) {
   }
 
   // Правая сторона
-  if ((index+1) % boardSize === 0) { // Если индекс делится на размер поля без остатка, значит строка закончилась
-    if (index+1 <= boardSize) { // Если индекс меньше или равен размеру поля, то это 1-я строка
+  if ((index + 1) % boardSize === 0) { // Если индекс делится на размер поля без остатка, значит строка закончилась
+    if (index + 1 <= boardSize) { // Если индекс меньше или равен размеру поля, то это 1-я строка
       return 'top-right';
-    } else if (lastLine < index+1 && index+1 <= fullBoardSize) {
+    } else if (lastLine < index + 1 && index + 1 <= fullBoardSize) {
       // Если индекс больше чем размер всего поля - длина последней строки && меньше чем размер всего поля полностью, то это последняя строка
       return 'bottom-right';
     } else { // Если не верх и не низ
@@ -27,14 +27,14 @@ export function calcTileType(index, boardSize) {
 
   // Верхняя и нижняя стороны
   if (1 < index < boardSize) { // Если не является углом и левым или правым краем
-    if (index+1 < boardSize) { // Если первая строка
+    if (index + 1 < boardSize) { // Если первая строка
       return 'top';
     }
     if (lastLine < index && index < fullBoardSize) { // Если последняя строка
       return 'bottom';
     }
   }
-
+  
   return 'center';
 }
 

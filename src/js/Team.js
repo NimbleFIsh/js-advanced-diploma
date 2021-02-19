@@ -4,9 +4,13 @@ export default class Team {
   static genRand(mode) { // генерация индексов расположения для компьютера и для игрока
     let index;
     if (mode === 'left') {
-      do {index = Math.floor(Math.random() * (64 - 0) + 0)} while ((index % 8) !== 0 && (index % 8) !== 1);
+      do {
+        index = Math.floor(Math.random() * (64 - 0) + 0);
+      } while ((index % 8) !== 0 && (index % 8) !== 1);
     } else if (mode === 'right') {
-      do {index = Math.floor(Math.random() * (64 - 0) + 0)} while ((index % 8) !== 6 && (index % 8) !== 7);
+      do {
+        index = Math.floor(Math.random() * (64 - 0) + 0);
+      } while ((index % 8) !== 6 && (index % 8) !== 7);
     }
     return index;
   }

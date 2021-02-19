@@ -12,6 +12,10 @@ test('generate gamePole by calcTileType()', () => {
     'left', 'center', 'center', 'center', 'center', 'center', 'center', 'right',
     'bottom-left', 'bottom', 'bottom', 'bottom', 'bottom', 'bottom', 'bottom', 'bottom-right'
   ];
-  for (let i = 0; i < 64; i++) pole.push(calcTileType(i, 8));
+
+  for (let i = 0; i < 64; i++) {
+    pole.push(calcTileType(i, 8));
+  }
+
   expect(pole).toEqual(result);
 });

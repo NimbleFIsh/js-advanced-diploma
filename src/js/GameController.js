@@ -25,8 +25,10 @@ export default class GameController {
     this.setEventListenerCellClick(); // Регистрация события нажатия на ячейку
 
     this.gamePlay.addNewGameListener(() => {
-      this.gamePlay.cells.forEach((item, i) => this.gamePlay.deselectCell(i)); // Снять все выделения с персонажей
       const allCharaters = [Bowman, Swordsman, Magician, Vampire, Undead, Daemon]; // все типы персонажей
+      this.gamePlay.cells.forEach((item, i) => { // Снять все выделения с персонажей
+        this.gamePlay.deselectCell(i)
+      });
       this.teams = Team.renderTeam(generateTeam([Bowman, Swordsman], 1, 2), generateTeam(allCharaters, 1, 2)); // генерация команд
       this.gamePlay.redrawPositions(this.teams.playerTeam.concat(this.teams.computerTeam)); // отрисовка команд
     }
@@ -51,25 +53,31 @@ export default class GameController {
   }
 
   setEventListenerCellClick() {
-    this.gamePlay.addCellClickListener(index => this.onCellClick(index));
+    this.gamePlay.addCellClickListener((index) => {
+      this.onCellClick(index);
+    })
   }
 
   setEventListenerCellEnter() {
-    this.gamePlay.addCellEnterListener(index => this.onCellEnter(index));
+    this.gamePlay.addCellEnterListener((index) => {
+      this.onCellEnter(index);
+    })
   }
 
   setEventListenerCellLeave() {
-    this.gamePlay.addCellLeaveListener(index => onCellLeave(index));
+    this.gamePlay.addCellLeaveListener((index) => {
+      this.onCellLeave(index);
+    })
   }
 
-  levelUp (playerTeam) {
+  levelUp(playerTeam) {
     const levels = ['prairie', 'desert', 'arctic', 'mountain'];
     levels.forEach((lvl, i) => {
       if (this.currentLevel === lvl) {
         if (i === levels.length) {
           // Конец игры
         } else {
-          this.currentLevel = levels[i+1];
+          this.currentLevel = levels[i + 1];
           playerTeam.forEach((person) => {
             heal(person);
             attackAfter(person);
@@ -92,9 +100,11 @@ export default class GameController {
   }
 
   onCellClick(index) {
-    let personageSelected = false, selectedPID = null, teamObj = {};
+    let personageSelected = false,
+        selectedPID = null,
+        teamObj = {};
 
-    this.gamePlay.cells.forEach((el, i)=> { // Перебор игрового поля
+    this.gamePlay.cells.forEach((el, i) => { // Перебор игрового поля
       if (el.classList.contains('selected')) { // Сканирование поля есть ли выбранный персонаж
         personageSelected = true;
         selectedPID = i;
@@ -123,7 +133,7 @@ export default class GameController {
           }
         }
         this.gamePlay.cells.forEach((item, i) => this.gamePlay.deselectCell(i)); // Снять все выделения с персонажей
-        console.log(teamObj.computerTeam.concat(teamObj.playerTeam));
+        // console.log(teamObj.computerTeam.concat(teamObj.playerTeam));
         this.gamePlay.redrawPositions(teamObj.computerTeam.concat(teamObj.playerTeam)); // Отрисовка перемещения
       } else { // клетка с персонажем
         if (selectedPID === index) { // Если нажатие по выбранному персонажу, то
@@ -132,11 +142,11 @@ export default class GameController {
           this.teams.computerTeam.forEach(item => { // Перебор команды компьютера
             if (item.position === index) { // Если нажатие по персонажу компьютера, то
               // Проверить, в зоне досигаемости ли персонаж
-                // Если да, то
-                  // Атака
-                  // Отнять хп врага
-                  // Отобразить урон
-                // Если нет, то заблокировать курсор и ничего не делать
+              // Если да, то
+              // Атака
+              // Отнять хп врага
+              // Отобразить урон
+              // Если нет, то заблокировать курсор и ничего не делать
             }
           });
         }
@@ -154,7 +164,9 @@ export default class GameController {
         });
         if (access) { // Если персонаж не компьютера
           this.teams.playerTeam.forEach((item, i) => { // перебор команды игрока
-            if (item.position !== index) {this.gamePlay.deselectCell(item.position)} // Снять со всех других выделение
+            if (item.position !== index) { // Снять со всех других выделение
+              this.gamePlay.deselectCell(item.position);
+            }
           });
           this.gamePlay.selectCell(index); // Выделить текущего персонажа
         }
@@ -162,26 +174,26 @@ export default class GameController {
     }
 
 
-      // let access = true, currentPersonageActive = false, currentPersonageId;
-      // this.teams.playerTeam.forEach((item) => { // перебор команды игрока
-      //   if (this.gamePlay.cells[item.position].classList.contains('selected')) { // Если выбран какой-нибудь игрок, то переключить логику
-      //     currentPersonageId = item.position;
-      //     currentPersonageActive = true;
-      //   }
-      // });
-      // if (!currentPersonageActive) { // Если персонаж не выделен
-      //   this.teams.computerTeam.forEach((item, i) => { // Проверка на клик по персонажу компьютера
-      //     if (item.position === index) {GamePlay.showError('Это персонаж компьютера');access = false;}
-      //   });
-      //   if (access) { // Если игрок выбрал не персонажа компьютера
-      //     this.teams.playerTeam.forEach((item, i) => { // перебор команды игрока
-      //       if (item.position !== index) {this.gamePlay.deselectCell(item.position)} // Снять со всех других выделение
-      //     });
-      //     this.gamePlay.selectCell(index); // Выделить текущего персонажа
-      //   }
-      // } else { // Если игрок нажал на выбранного персонажа
-      //   this.gamePlay.deselectCell(index); // снять выделение
-      // }
+    // let access = true, currentPersonageActive = false, currentPersonageId;
+    // this.teams.playerTeam.forEach((item) => { // перебор команды игрока
+    //   if (this.gamePlay.cells[item.position].classList.contains('selected')) { // Если выбран какой-нибудь игрок, то переключить логику
+    //     currentPersonageId = item.position;
+    //     currentPersonageActive = true;
+    //   }
+    // });
+    // if (!currentPersonageActive) { // Если персонаж не выделен
+    //   this.teams.computerTeam.forEach((item, i) => { // Проверка на клик по персонажу компьютера
+    //     if (item.position === index) {GamePlay.showError('Это персонаж компьютера');access = false;}
+    //   });
+    //   if (access) { // Если игрок выбрал не персонажа компьютера
+    //     this.teams.playerTeam.forEach((item, i) => { // перебор команды игрока
+    //       if (item.position !== index) {this.gamePlay.deselectCell(item.position)} // Снять со всех других выделение
+    //     });
+    //     this.gamePlay.selectCell(index); // Выделить текущего персонажа
+    //   }
+    // } else { // Если игрок нажал на выбранного персонажа
+    //   this.gamePlay.deselectCell(index); // снять выделение
+    // }
   }
 
   onCellEnter(index) {
