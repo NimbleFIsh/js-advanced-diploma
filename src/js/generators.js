@@ -19,7 +19,7 @@ const allowedClasses = [Bowman, Swordsman, Magician, Vampire, Undead, Daemon];
 function generatorInputValidator(allowedTypes) {
   if (Array.isArray(allowedTypes)) { // Проверка списка итерируемых классов, является ли массивом
     allowedTypes.forEach((prop, i) => { // Перебор массива allowedTypes для проверки на iterable and class
-      if (Object.getOwnPropertySymbols(new prop(1, prop).prototype).includes(Symbol.iterator)) { // Если эл.массива итерируемый
+      if (Object.getOwnPropertySymbols(new prop(1, prop).__proto__.__proto__).includes(Symbol.iterator)) { // Если эл.массива итерируемый
         if (!allowedClasses.includes(prop)) { // Если эл.массива нет в спике разрешённых классов
           throw new Error(`${prop} not allowed Type of character!`);
         }
@@ -45,7 +45,7 @@ export function* characterGenerator(allowedTypes, maxLevel) {
     do {
       randPers = generateRandomPersonage();
     } while (!allowedTypes.includes(randPers)); // Случайно генерирует персонажа по списку разрешённых
-    yield new randPers(Math.floor(Math.random() * (maxLevel - 1) + 1), randPers.name.toLowerCase());
+    yield new randPers(Math.floor(Math.random() * (maxLevel - 1) + 1), new randPers().name.toLowerCase());
   } else {
     throw new Error(answer);
   }

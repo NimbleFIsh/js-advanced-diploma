@@ -6,9 +6,6 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
   },
-  optimization: {
-    minimize: false,
-  },
   module: {
     rules: [
       {
@@ -29,13 +26,7 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 1,
-              modules: false
-            }
-          }
+          MiniCssExtractPlugin.loader, 'css-loader',
         ],
       },
       {
