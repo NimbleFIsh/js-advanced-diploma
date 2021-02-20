@@ -6,5 +6,6 @@ export default class Swordsman extends Character {
     this.name = 'Swordsman';
     this.attack = 40;
     this.defence = 10;
+    this.range = 1;
   }
 }
