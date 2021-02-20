@@ -10,6 +10,7 @@ import Daemon from './Daemon';
 import Team from './Team';
 import {generateTeam} from './generators';
 import themes from './themes';
+import cursors from './cursors';
 
 export default class GameController {
   constructor(gamePlay, stateService) {
@@ -64,9 +65,9 @@ export default class GameController {
     })
   }
 
-  setEventListenerCellLeave() {
-    this.gamePlay.addCellLeaveListener((index) => {
-      this.onCellLeave(index);
+  setEventListenerCellLeave() { // Нет реакции
+    this.gamePlay.addCellLeaveListener((index) => { // Нет реакции
+      this.onCellLeave(index); // Нет реакции
     })
   }
 
@@ -160,6 +161,7 @@ export default class GameController {
           if (teammate) { // Если свой, то
             this.gamePlay.deselectCell(selectedPID); // Снять с текущего выделение
             this.gamePlay.selectCell(index); // Выделить другого персонажа
+            this.gamePlay.setCursor(cursors.auto); // Установить курсор "auto"
           }
         }
       }
@@ -194,19 +196,79 @@ export default class GameController {
 
   onCellEnter(index) {
     if (this.gamePlay.cells[index].childElementCount !== 0) { // Если клетка не пуста
-      for (let team in this.teams) { // Перебор комманд
-        if (this.teams.hasOwnProperty(team)) {
-          this.teams[team].forEach((l) => { // Перебор комманды
-            if (l.position === index) { // Если персонаж в клетке соответсвует персонажу в комманде, то
-              this.gamePlay.showCellTooltip(`🎖${l.character.level} ⚔${l.character.attack} 🛡${l.character.defence} ❤${l.character.health}`, index); // Создать ему title
+      let personageSelected = false,
+          selectedPID = null,
+          currentCursour = null;
+
+      this.gamePlay.cells.forEach((el, i) => { // Перебор игрового поля
+        if (el.classList.contains('selected')) { // Сканирование поля есть ли выбранный персонаж
+          personageSelected = true;
+          selectedPID = i;
+        }
+      });
+
+      if (personageSelected) { // Если персонаж выбран, то
+        this.teams.playerTeam.forEach((item, i) => { // Перебор команды игрока
+          this.gamePlay.cells[item.position].removeAttribute('title');
+          if (!this.gamePlay.cells[index].classList.contains('selected')) { // Если наведение не на текущего персонажа
+            this.teams.playerTeam.forEach((elem) => { // перебор комманды игрока
+              if (elem.position === index) { // Если персонаж из комманды игрока
+                this.gamePlay.setCursor(cursors.pointer); // Установить курсор "pointer"
+                currentCursour = 'pointer';
+              }
+            });
+          } else { // Если наведение на текущего персонажа
+            this.gamePlay.setCursor(cursors.auto); // Установить курсор "auto"
+            currentCursour = 'auto';
+          }
+        });
+        if (currentCursour === null) { // Если курсор не был изменён, то
+          this.teams.computerTeam.forEach((item, i) => { // Перебор комманды компьютера
+            if (index === item.position) { // Если враг находится в текущей ячейке
+              this.teams.playerTeam.forEach((item, i) => { // Перебор комманды игрока
+                if (item.position === selectedPID) { // Поиск выбранного персонажа
+                  // console.log(selectedPID);
+                  // console.log(index);
+
+                  let layer = 0;
+                  for (let i = -item.character.range*2; i <= item.character.range*2; i++) {
+                    for (let r = 0; r < item.character.range; r++) {
+                      console.log(selectedPID + '%8-(' + (i) + ')+(8*' + layer / 2 + ') ~ ' + (selectedPID % 8 - (i) + (8 * layer / 2)));
+                    }
+                    layer++;
+                  }
+                  // pos -range ... range
+                  // layer 2 * range
+                  // selectedPID % 8 - (pos) + (8 * layer)
+
+
+                  // if (item.character.range) { // Проверка зоны поражения выбранного персонажа
+                    // this.gamePlay.setCursor(cursors.crosshair); // Установка курсора "crosshair"
+                  // } else { // Если враг вне зоны поражения
+                    // this.gamePlay.setCursor(cursors.notallowed); // Установка курсора "notallowed"
+                  // }
+                }
+              });
+            } else {
+              this.gamePlay.setCursor(cursors.auto); // Установка курсора "auto"
             }
           });
+        }
+      } else { // Если персонаж не выбран, то
+        for (let team in this.teams) { // Перебор комманд
+          if (this.teams.hasOwnProperty(team)) {
+            this.teams[team].forEach((l) => { // Перебор комманды
+              if (l.position === index) { // Если персонаж в клетке соответсвует персонажу в комманде, то
+                this.gamePlay.showCellTooltip(`🎖${l.character.level} ⚔${l.character.attack} 🛡${l.character.defence} ❤${l.character.health}`, index); // Создать ему title
+              }
+            });
+          }
         }
       }
     }
   }
 
-  onCellLeave(index) {
-
+  onCellLeave(index) {// Нет реакции
+    console.log(index); // Нет реакции
   }
 }
