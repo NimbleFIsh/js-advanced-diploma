@@ -96,173 +96,179 @@ export default class GameController {
     }
   }
 
+  currentPersonage() { // Считывает текущего выбранного персонажа
+    let info = {};
+    info.selected = false;
+    this.gamePlay.cells.forEach((item, i) => {
+      if (item.classList.contains('selected')) {
+        info.selected = true;
+        info.ID = i;
+        this.teams.playerTeam.forEach((el) => {
+          if (el.position === i) {
+            info.personage = el.character;
+          }
+        });
+      }
+    });
+    return info;
+  }
+
+  readCharasters() { // Считывает this.teams и выводит результаты в удобном виде
+    let info = [];
+    for (let i = 0; i < Object.keys(this.teams).length; i++) {
+      for (let f = 0; f < this.teams[Object.keys(this.teams)[i]].length; f++) {
+        info.push({
+          'command': Object.keys(this.teams)[i],
+          'position': this.teams[Object.keys(this.teams)[i]][f].position,
+          'character': this.teams[Object.keys(this.teams)[i]][f].character
+        });
+      }
+    }
+    return info;
+  }
+
+  personageCellEnterInfo(index) { // Возвращает информацию о персонаже, над которым сейчас находится курсор мыши
+    return this.readCharasters().filter((s) => {
+      return s.position === index;
+    })[0];
+  }
+
+  cellIsNotEmpty(index) { // Проверяет, не пустая ли клетка
+    return this.gamePlay.cells[index].childElementCount !== 0;
+  }
+
+  checkEmptyCellTitle(index) { // Проверяет, есть ли у пустой клетки title и удаляет его
+    if (this.gamePlay.cells[index].title !== '') { // Если вдруг случится так, что у пустой ячейки есть title
+      this.gamePlay.cells[index].removeAttribute('title'); // Удалить атрибут title
+    }
+  }
+
+  setCursor(cursour) { // небольшое API для эстетичности кода, устанавливает курсор
+    this.gamePlay.setCursor(cursors[cursour]);
+  }
+
+  deselectAllCellColor(color = 'yellow') {
+    for (let i = 0; i < this.gamePlay.cells.length; i++) {
+      if (this.gamePlay.cells[i].classList.contains('selected-' + color)) {
+        this.gamePlay.cells[i].classList.remove('selected');
+        this.gamePlay.cells[i].classList.remove('selected-' + color);
+      }
+    }
+  }
+
   attackAfter(character) {
     character.attack = Math.max(character.attack, character.attack * (1.8 - character.health) / 100);
   }
 
   onCellClick(index) {
-    let personageSelected = false,
-        selectedPID = null,
-        teamObj = {};
+    let currentPersonage = this.currentPersonage(), // Получение объекта с данными о текущем выбранном персонаже
+        characters = this.readCharasters(); // Все персонажи
 
-    this.gamePlay.cells.forEach((el, i) => { // Перебор игрового поля
-      if (el.classList.contains('selected')) { // Сканирование поля есть ли выбранный персонаж
-        personageSelected = true;
-        selectedPID = i;
-      }
-    });
-
-    if (personageSelected) { // Если выбран персонаж, то
-      if (this.gamePlay.cells[index].childElementCount === 0) { // пустая клетка
-        let arrCharatersId = []; // Массив для хранения id для получения объектов персонажей
-        this.gamePlay.cells.forEach((item, i) => { // Перебор игрового поля
-          if (item.childElementCount > 0) { // Если есть дочерние элементы, значит это не пустая клетка
-            arrCharatersId.push(i); // Запись в массив id персонажей
-          }
-        });
-
-        for (let team in this.teams) { // Перебор комманд
-          if (this.teams.hasOwnProperty(team)) { // Есть ли команда в списке комманд
-            teamObj[team] = []; // массив команды для записи персонажей
-            this.teams[team].forEach((elem, i) => { // Перебор комманды
-              if (selectedPID === elem.position) { // Если выделенный персонаж, то
-                teamObj[team][i] = new PositionedCharacter(elem.character, index);
-                this.gamePlay.cells[elem.position].removeAttribute('title'); // Удаление title со старой клетки
-                this.gamePlay.showCellTooltip(`🎖${elem.character.level} ⚔${elem.character.attack} 🛡${elem.character.defence} ❤${elem.character.health}`, index); // Создание title у новой клетки
-                this.teams[team][i].position = index; // Запись в память комманд, что совершенно перемещение
-              } else {
-                teamObj[team][i] = elem; // запись персонажей в массив
-              }
-            });
-          }
-        }
-
-        this.gamePlay.cells.forEach((item, i) => { // Перебор игрового поля
-          this.gamePlay.deselectCell(i); // Снять все выделения с персонажей
-        });
-
-        this.gamePlay.redrawPositions(teamObj.computerTeam.concat(teamObj.playerTeam)); // Отрисовка перемещения
-      } else { // клетка с персонажем
-        if (selectedPID === index) { // Если нажатие по выбранному персонажу, то
-          this.gamePlay.deselectCell(index); // Снять выделение
-        } else {
-          let teammate = true;
-          this.teams.computerTeam.forEach(item => { // Перебор команды компьютера
-            if (item.position === index) { // Если нажатие по персонажу компьютера, то
-              teammate = false;
-              // Проверить, в зоне досигаемости ли персонаж
-              // Если да, то
-              // Атака
-              // Отнять хп врага
-              // Отобразить урон
-              // Если нет, то заблокировать курсор и ничего не делать
-            }
-          });
-          if (teammate) { // Если свой, то
-            this.gamePlay.deselectCell(selectedPID); // Снять с текущего выделение
-            this.gamePlay.selectCell(index); // Выделить другого персонажа
-            this.gamePlay.setCursor(cursors.auto); // Установить курсор "auto"
-          }
-        }
-      }
-    } else { // Если не выбран персонаж, то
-      if (this.gamePlay.cells[index].childElementCount === 0) { // пустая клетка
-        // Ничего не делать
-      } else { // Если в клетке персонаж
-        let access = true;
-        this.teams.computerTeam.forEach((item, i) => { // Проверка на клик по персонажу компьютера
-          if (item.position === index) {
-            GamePlay.showError('Это персонаж компьютера');
-            access = false;
-          }
-        });
-        if (access) { // Если персонаж не компьютера
-          this.teams.playerTeam.forEach((item, i) => { // перебор команды игрока
-            if (item.position !== index) { // Снять со всех других выделение
-              this.gamePlay.deselectCell(item.position);
-            }
-          });
-          this.gamePlay.selectCell(index); // Выделить текущего персонажа
-        }
-      }
+    if (currentPersonage.selected && currentPersonage.ID === index) { // Клик по текущему выбранному персонажу
+      this.gamePlay.deselectCell(index);
+      return 0;
     }
 
-    this.gamePlay.cells.forEach((cell) => { // Перебор игрового поля
-      if (cell.childElementCount ===0 && cell.getAttributeNames().includes('title')) { // Если клетка пуста и у неё есть title
-        cell.removeAttribute('title'); // То удалить его
+    if (this.cellIsNotEmpty(index)) { // Если клетка не пуста
+      if (currentPersonage.selected) { // Если персонаж выбран
+        // Если клик не по текущему выбранному персонажу
+        for (let i = 0; i < characters.length; i++) { // Перебор всех персонажей
+          if (characters[i].position === index) { // Если позиция персонажа совпадает с позицией нажатой ячейки
+            if (characters[i].command === 'playerTeam') { // Если персонаж игрока
+              this.deselectAllCellColor();
+              this.gamePlay.selectCell(index);
+            } else { // Если персонаж компьютера
+              // проверка расстояния атаки
+                // Атака
+            }
+          }
+        }
+      } else { // Персонаж не выбран
+        for (let i = 0; i < characters.length; i++) { // Перебор всех персонажей
+          if (characters[i].position === index) { // Персонаж в данной клетке
+            if (characters[i].command === 'playerTeam') { // Если персонаж пренадлежить игроку
+              this.deselectAllCellColor();
+              this.gamePlay.selectCell(index); // Выбор персонажа
+            } else {
+              GamePlay.showError('Это персонаж компьютера!'); // Ошибка что персонаж не принадлежит игроку
+              break; // Выход из цикла
+            }
+          }
+        }
       }
-    });
+    } else { // Если клетка пуста
+      if (currentPersonage.selected) { // Если персонаж выбран
+        let team = []; // Массив для отображения персонажей
+        characters.forEach((item, i) => { // Перебор всех персонажей
+          if (item.position === currentPersonage.ID) { // Поиск выбранного персонажа
+            team.push(new PositionedCharacter(currentPersonage.personage, index));
+            this.checkEmptyCellTitle(item.position); // Удаление title с старой ячейки
+            this.gamePlay.showCellTooltip(`🎖${item.character.level} ⚔${item.character.attack} 🛡${item.character.defence} ❤${item.character.health}`, index); // Создание title у новой клетки
+            this.teams[item.command].forEach((el) => { // Перебор комманды перемещённого персонажа
+              el.position = index; // Запись в память комманд, что соверешенно перемещение
+            });
+          } else {
+            team.push(new PositionedCharacter(item.character, item.position));
+          }
+        });
+        this.deselectAllCellColor();
+        console.log(team);
+        this.gamePlay.redrawPositions(team); // Отрисовка перемещения
+      }
+    }
   }
 
   onCellEnter(index) {
-    if (this.gamePlay.cells[index].childElementCount !== 0) { // Если клетка не пуста
-      let personageSelected = false,
-          selectedPID = null,
-          currentCursour = null;
-
-      this.gamePlay.cells.forEach((el, i) => { // Перебор игрового поля
-        if (el.classList.contains('selected')) { // Сканирование поля есть ли выбранный персонаж
-          personageSelected = true;
-          selectedPID = i;
-        }
-      });
-
-      if (personageSelected) { // Если персонаж выбран, то
-        this.teams.playerTeam.forEach((item, i) => { // Перебор команды игрока
-          this.gamePlay.cells[item.position].removeAttribute('title');
-          if (!this.gamePlay.cells[index].classList.contains('selected')) { // Если наведение не на текущего персонажа
-            this.teams.playerTeam.forEach((elem) => { // перебор комманды игрока
-              if (elem.position === index) { // Если персонаж из комманды игрока
-                this.gamePlay.setCursor(cursors.pointer); // Установить курсор "pointer"
-                currentCursour = 'pointer';
-              }
-            });
-          } else { // Если наведение на текущего персонажа
-            this.gamePlay.setCursor(cursors.auto); // Установить курсор "auto"
-            currentCursour = 'auto';
+    let currentPersonage = this.currentPersonage(); // Получение объекта с данными о текущем выбранном персонаже
+    if (this.cellIsNotEmpty(index)) { // Если клетка не пуста
+      if (currentPersonage.selected) { // Если персонаж выбран
+        if (this.personageCellEnterInfo(index).command === 'playerTeam') { // Если курсор над союзником
+          this.deselectAllCellColor('red');
+          this.deselectAllCellColor('green');
+          this.setCursor('pointer');
+        } else if (this.personageCellEnterInfo(index).command === 'computerTeam') { // Если курсор над противником
+          // Проверка зоны атаки
+          if (true) { // В зоне атаки (пока загрушка)
+            this.deselectAllCellColor('green');
+            this.deselectAllCellColor('red');
+            this.setCursor('crosshair');
+            this.gamePlay.selectCell(index, 'red');
+          } else { // Вне зоны атаки
+            this.deselectAllCellColor('red');
+            this.deselectAllCellColor('green');
+            this.setCursor('notallowed');
           }
-        });
-        if (currentCursour === null) { // Если курсор не был изменён, то
-          this.teams.computerTeam.forEach((item, i) => { // Перебор комманды компьютера
-            if (index === item.position) { // Если враг находится в текущей ячейке
-              this.teams.playerTeam.forEach((item, i) => { // Перебор комманды игрока
-                if (item.position === selectedPID) { // Поиск выбранного персонажа
-                  // console.log(selectedPID);
-                  // console.log(index);
-
-                  let layer = 0;
-                  for (let i = -item.character.range*2; i <= item.character.range*2; i++) {
-                    for (let r = 0; r < item.character.range; r++) {
-                      console.log(selectedPID + '%8-(' + (i) + ')+(8*' + layer / 2 + ') ~ ' + (selectedPID % 8 - (i) + (8 * layer / 2)));
-                    }
-                    layer++;
-                  }
-                  // pos -range ... range
-                  // layer 2 * range
-                  // selectedPID % 8 - (pos) + (8 * layer)
-
-
-                  // if (item.character.range) { // Проверка зоны поражения выбранного персонажа
-                    // this.gamePlay.setCursor(cursors.crosshair); // Установка курсора "crosshair"
-                  // } else { // Если враг вне зоны поражения
-                    // this.gamePlay.setCursor(cursors.notallowed); // Установка курсора "notallowed"
-                  // }
-                }
-              });
-            } else {
-              this.gamePlay.setCursor(cursors.auto); // Установка курсора "auto"
-            }
-          });
+        } else { // Иначе же, пустота
+          this.deselectAllCellColor('red');
+          this.deselectAllCellColor('green');
+          this.setCursor('auto');
         }
-      } else { // Если персонаж не выбран, то
-        for (let team in this.teams) { // Перебор комманд
-          if (this.teams.hasOwnProperty(team)) {
-            this.teams[team].forEach((l) => { // Перебор комманды
-              if (l.position === index) { // Если персонаж в клетке соответсвует персонажу в комманде, то
-                this.gamePlay.showCellTooltip(`🎖${l.character.level} ⚔${l.character.attack} 🛡${l.character.defence} ❤${l.character.health}`, index); // Создать ему title
-              }
-            });
-          }
+      } else { // Если персонаж не выбран
+        let personageData = this.personageCellEnterInfo(index); // Получение данных о текущем персонаже
+        this.gamePlay.showCellTooltip(`🎖 ${personageData.character.level} ⚔ ${personageData.character.attack} 🛡 ${personageData.character.defence} ❤ ${personageData.character.health}`, index); // Создание title для текущего персонажа
+      }
+
+      // Проверка зоны атаки/перемещения
+      //             let layer = 0;
+      //             for (let i = -item.character.range*2; i <= item.character.range*2; i++) {
+      //               for (let r = 0; r < item.character.range; r++) {
+      //                 console.log(selectedPID + '%8-(' + (i) + ')+(8*' + layer / 2 + ') ~ ' + (selectedPID % 8 - (i) + (8 * layer / 2)));
+      //               }
+      //               layer++;
+      //             }
+      //             // pos -range ... range
+      //             // layer 2 * range
+      //             // selectedPID % 8 - (pos) + (8 * layer)
+
+    } else { // Если клетка пуста
+      this.checkEmptyCellTitle(index);
+      if (currentPersonage.selected) { // Если персонаж выбран
+        this.deselectAllCellColor('red');
+        this.deselectAllCellColor('green');
+        // Проверка зоны перемещения
+        if (true) { // В зоне перемещения (пока загрушка)
+          this.setCursor('pointer');
+          this.gamePlay.selectCell(index, 'green');
         }
       }
     }
